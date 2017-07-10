@@ -9,4 +9,6 @@
 *  可以调节速度 可以使用键盘操作 
 *  还有结算分数呦  欢迎大家下载修改
 
+![demo](https://github.com/canvaslh/game/blob/master/demo.png?raw=true "效果图")  
+
 
