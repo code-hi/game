@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+
+	<head>
+		<meta charset="UTF-8">
+		<title>辉哥—_canvas--canvas贪吃蛇</title>
+		<script>
+		</script>
+	</head>
+
+	<body onload="myCanva()" style="background: rgb(54,198,193);color: #fff">
+		<div style="position: fixed;left:300px;">
+			<canvas id="mycan" width="500px" height="500px" style="background:yellow"></canvas>
+			<div id="over" style="background:yellow;position: fixed;left: 300px;top: 8px;opacity: 0.8;width:500px; height:500px;display: none ">
+
+				<img src="img/game-over.png" style="padding:150px 0 0 ">
+				<center>
+					<div id="cxkaishi" style=";cursor: pointer;width: 200px;height: 30px;background: red  ;border-radius: 50px; text-align: center;font-size: 18px;">重新开始</div>
+					<span id="sum" style="color: blue"></span>
+				</center>
+			</div>
+			你的分数为：
+			<span type="text" id="fen"></span>
+			<div class="sudou" style="position: fixed;left: 820px;top:200px;width: 200px;height: 200px;">
+				<!--<button id="btn1">快速</button>-->
+				<!--<button id="btn2">中速</button>-->
+				<!--<button id="btn3">慢速</button>-->
+				请输入你的速度：
+				<form name="myform">
+					<input type="number" id="sd" name="sd" value="200" placeholder="速度为0-10000之间">
+				</form>
+				<button id="btn">开始游戏</button><br>
+				<button id="btn1">暂停游戏</button><br>
+				<!--<button id="btn2">关掉音乐</button><br><br><br>-->
+
+				开始之前请先设置速度。<br> 上下左右方向键控制方向。
+				<br> 空格键暂停游戏。
+				<br> 回车键重新开始。
+			</div>
+			<!--音乐-->
+			<audio controls id="beijing" style="display: none" loop="loop">
+				<source src="sound/beijing.ogg" type="audio/ogg">
+				<source src="sound/beijing.mp3" type="audio/mpeg"> 你的浏览器不支持audio标签
+			</audio>
+			<audio controls id="chi" style="display: none">
+				<source src="sound/chi.ogg" type="audio/ogg">
+				<source src="sound/chi.mp3" type="audio/mpeg"> 你的浏览器不支持audio标签
+			</audio>
+			<audio controls id="si" style="display: none">
+				<source src="sound/boom.ogg" type="audio/ogg">
+				<source src="sound/boom.mp3" type="audio/mpeg"> 你的浏览器不支持audio标签
+			</audio>
+		</div>
+
+		<button id="kz1" style="width: 50px;height: 50px;position: fixed;left: 100px;top: 50px;">上</button>
+		<button id="kz2" style="width: 50px;height: 50px;position: fixed;left: 100px;top: 150px;">下</button>
+		<button id="kz3" style="width: 50px;height: 50px;position: fixed;left: 50px;top: 100px" ;>左</button>
+		<button id="kz4" style="width: 50px;height: 50px;position: fixed;left: 150px;top: 100px;">右</button>
+
+	</body>
+	<script>
+		var over = document.getElementById("over");
+		//获取对象
+		var mycan = document.getElementById("mycan");
+		//获取上下文（画师）
+		var context = mycan.getContext("2d");
+		var fen = document.getElementById("fen");
+		fen.innerHTML = 0;
+
+		//蛇坐标数组---蛇头 0  蛇身 1  蛇尾  2
+		var she_arr = [
+			[1, 1],
+			[2, 1],
+			[3, 1]
+		];
+		//食物
+		var shiwu = [];
+		//    步长
+		var she_step = 25;
+		//方向
+		var fangxiang = "";
+		//食物
+		function food() {
+			var isok = true;
+			//获取随机坐标
+			var x = Math.floor(Math.random() * 20);
+			var y = Math.floor(Math.random() * 20);
+			//检测食物坐标是否有效
+			for(var i = 0; i < she_arr.length; i++) {
+				//检测食物是否在蛇坐标上
+				if(x == she_arr[i][0] && y == she_arr[i][1]) {
+					isok = false;
+					break;
+				};
+			};
+			if(isok) {
+				//当随机坐标无效时，重新分配随机坐标
+				//                        shiwu[0]=x;
+				//                        shiwu[1]=y;
+				shiwu = [x, y]
+			} else {
+				food()
+			};
+		};
+		food();
+
+		function myCanva() {
+
+			if(mycan == null) {
+				return;
+			}
+
+			//清除走过的痕迹
+			context.fillStyle = "yellow";
+			context.fillRect(0, 0, 500, 500);
+			//context.clearRect(0,0,500,500)
+			//       //横竖线
+			//for(var i=0;i<mycan.width; i+=25){
+			//    context.strokeStyle="rgb(230,230,233)";
+			//    context.moveTo(i,0);
+			//    context.lineTo(i,500);
+			//    context.stroke();
+			//    context.moveTo(0,i);
+			//    context.lineTo(500,i);
+			//    context.stroke();
+			//}
+
+			//蛇移动
+			switch(fangxiang) {
+				case "up":
+					var she_tou = [];
+					she_tou[0] = she_arr[0][0];
+					she_tou[1] = she_arr[0][1] - 1;
+					she_arr.unshift(she_tou);
+					//判断蛇新的蛇头是否吃食物
+					if(she_tou[0] == shiwu[0] && she_tou[1] == shiwu[1]) {
+						//吃了食物，重新设置食物坐标
+						food();
+						fen.innerHTML = she_arr.length - 3;
+						chi();
+					} else {
+						she_arr.pop();
+					}
+
+					;
+					break;
+				case "down":
+					var she_tou = [];
+					she_tou[0] = she_arr[0][0];
+					she_tou[1] = she_arr[0][1] + 1;
+					she_arr.unshift(she_tou);
+					//判断蛇新的蛇头是否吃食物
+					if(she_tou[0] == shiwu[0] && she_tou[1] == shiwu[1]) {
+						//吃了食物，重新设置食物坐标
+						food();
+						fen.innerHTML = she_arr.length - 3;
+						chi();
+					} else {
+						she_arr.pop();
+					};
+					break;
+				case "left":
+					var she_tou = [];
+					she_tou[0] = she_arr[0][0] - 1;
+					she_tou[1] = she_arr[0][1];
+					she_arr.unshift(she_tou);
+					//判断蛇新的蛇头是否吃食物
+					if(she_tou[0] == shiwu[0] && she_tou[1] == shiwu[1]) {
+						//吃了食物，重新设置食物坐标
+						food();
+						fen.innerHTML = she_arr.length - 3;
+						chi();
+					} else {
+						she_arr.pop();
+					};
+					break;
+				case "right":
+					var she_tou = [];
+					she_tou[0] = she_arr[0][0] + 1;
+					she_tou[1] = she_arr[0][1];
+					she_arr.unshift(she_tou);
+					//判断蛇新的蛇头是否吃食物
+					if(she_tou[0] == shiwu[0] && she_tou[1] == shiwu[1]) {
+						//吃了食物，重新设置食物坐标
+						food();
+						fen.innerHTML = she_arr.length - 3;
+						chi();
+					} else {
+						she_arr.pop();
+					};
+					break;
+				default:
+					break;
+
+			};
+
+			//设置填充色
+			context.fillStyle = "#fff";
+			context.fillRect(shiwu[0] * she_step, shiwu[1] * she_step, 25, 25);
+			context.strokeRect(shiwu[0] * she_step, shiwu[1] * she_step, 25, 25);
+			//绘制蛇身 蛇尾 蛇头
+			for(var i = 0; i < she_arr.length; i++) {
+				context.fillStyle = "red";
+
+				context.fillRect(she_arr[i][0] * she_step, she_arr[i][1] * she_step, 25, 25);
+				context.strokeRect(she_arr[i][0] * she_step, she_arr[i][1] * she_step, 25, 25);
+				if((she_arr[i][0] * she_step) > 500 || (she_arr[i][0] * she_step) < 0 || she_arr[i][1] * she_step > 500 || she_arr[i][1] * she_step < 0) {
+					//             alert("你撞墙了,请重新开始游戏");window.location.reload();
+					over.style.display = "block";
+					$("beijing").pause();
+					si();
+					sum.innerHTML = "最后得分：" + (she_arr.length - 3) + "分"
+				}
+
+			}
+
+		};
+
+		//键盘编码事件
+		function move(e) {
+			var e = e || event;
+			//       40下
+			if(e.keyCode == 40) {
+				fangxiang = "down";
+				$("beijing").play()
+			}
+			//       38上
+			if(e.keyCode == 38) {
+				fangxiang = "up";
+				$("beijing").play()
+			}
+			//       37左
+			if(e.keyCode == 37) {
+				fangxiang = "left";
+				$("beijing").play()
+			}
+			//       39右
+			if(e.keyCode == 39) {
+				fangxiang = "right";
+				$("beijing").play()
+			}
+			//            空格
+			if(e.keyCode == 32) {
+				$("beijing").pause();
+				alert("你暂停了游戏，点击确认继续游戏")
+			}
+			//            回车
+			if(e.keyCode == 13) {
+				window.location.reload()
+			}
+
+		}
+		document.onkeydown = move;
+
+		var btn = document.getElementById("btn");
+		var cx = document.getElementById("cxkaishi");
+
+		btn.onclick = function kaishi() {
+			var sd = myform.sd.value;
+
+			setInterval(myCanva, sd);
+			beijing();
+		}
+		cx.onclick = function() {
+			var sd = myform.sd.value;
+
+			over.style.display = "none";
+			window.location.reload();
+			setInterval(myCanva, sd);
+		}
+
+		function beijing() {
+			$("beijing").play()
+		}
+		$("btn1").onclick = function() {
+			$("beijing").pause();
+			alert("你暂停了游戏，点击确认继续游戏");
+		}
+
+		function chi() {
+			$("chi").play()
+
+		}
+
+		function si() {
+			$("si").play()
+
+		}
+
+		function $(id) {
+			return document.getElementById(id)
+		}
+		$("kz1").onclick = function() {
+			fangxiang = "up";
+		}
+		$("kz2").onclick = function() {
+			fangxiang = "down";
+		}
+		$("kz3").onclick = function() {
+			fangxiang = "left";
+		}
+		$("kz4").onclick = function() {
+			fangxiang = "right";
+		}
+	</script>
+
+</html>
